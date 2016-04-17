@@ -21,6 +21,7 @@ int fork() {
   return r;
 }
 
+
 int exit(){
   int r;
   asm volatile( "svc #3     \n"
@@ -38,6 +39,65 @@ int read(void *command){
                 : "rd" (command)
                 : "r0");
   return rd;
+}
+
+/*int runSame(int id){
+  int rs;
+  asm volatile( "mov r0, %1 \n"
+                "svc #5     \n"
+                "mov %0, r0 \n"
+                : "=rs" (rs)
+                : "rs" (id)
+                : "r0");
+  return rs;
+}*/
+
+int noOfProc(){
+  int rp;
+  asm volatile("svc #6     \n"
+               "mov %0, r0 \n" 
+             : "=r" (rp));
+  return rp;
+}
+
+int exitP(int id){
+  int rr;
+  asm volatile( "mov r0, %1 \n"
+                "svc #7     \n"
+                "mov %0, r0 \n"
+                : "=rr" (rr)
+                : "rr" (id)
+                : "r0");
+  return rr;
+}
+
+int send(char* message, int recipient){
+  int rs;
+  asm volatile( "mov r0, %1 \n"
+                "mov r1, %2 \n"
+                "svc #8     \n"
+                "mov %0, r0 \n" 
+              : "=rs" (rs) 
+              : "rs" (message), "rs" (recipient) 
+              : "r0", "r1");
+  return rs;
+
+}
+
+char* receive(int sender){
+  char* rm;
+  asm volatile( "mov r0, %1 \n"
+                "svc #9     \n"
+                "mov %0, r0 \n" 
+              : "=rm" (rm) 
+              : "rm" (sender)
+              : "r0");
+  return rm;
+
+}
+
+void stayPut(){
+  asm volatile( "svc #10    \n");
 }
 
 int getlength(int x){
@@ -101,3 +161,53 @@ void writenum(int x){
   }
   for(int i  = l; i>0; i--)dig2char(dig[i-1]);
 }
+
+/*int char2int(char x){
+  int i;
+  switch(x){
+    case "1":
+      i = 1;
+      break;
+    case "2":
+      i = 2;
+      break;
+    case "3":
+      i = 3;
+      break;
+    case "4":
+      i = 4;
+      break;
+    case "5":
+      i = 5;
+      break;
+    case "6":
+      i = 6;
+      break;
+    case "7":
+      i = 7;
+      break;
+    case "8":
+      i = 8;
+      break;
+    case "9":
+      i = 9;
+      break;
+    case "0":
+      i = 0;
+      break;
+    default:
+      write(0, "Digit not found ", 16);
+      break;
+  }
+  return i;
+}
+
+void readnum(char* x){
+  int l = getlength(x), d = 10;
+  int dig[l];
+  for(int i = 0; i<l;i++){
+      dig[i] = x%d;
+      x = (x - (x % d))/d;
+  }
+  for(int i  = l; i>0; i--)dig2char(dig[i-1]);
+}*/

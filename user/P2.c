@@ -16,14 +16,14 @@ void P2() {
   int i = 1;
   while( i ) {
     // compute the Hamming weight of each x for 2^8 < x < 2^24
-    /*for( uint32_t x = ( 1 << 8 ); x < ( 1 << 9 ); x++ ) {
+    for( uint32_t x = ( 1 << 8 ); x < ( 1 << 28 ); x++ ) {
       uint32_t r = weight( x );
     //  if(nid == 0) write(0, "Child: ", 7);
     //  else write(0, "Parent: ", 8);    
       write(0,"weight(",7);writenum(x);write(0,")=",2);writenum(r);
       write(0,"\n",1);
-    }*/
-    write(0, "in P2\n", 6);
+    }
+    //write(0, "in P2\n", 6);
     i = 0;
   }
 }
