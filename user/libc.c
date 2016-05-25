@@ -22,12 +22,8 @@ int fork() {
 }
 
 
-int exit(){
-  int r;
-  asm volatile( "svc #3     \n"
-                "mov %0, r0 \n"
-                : "=r" (r));
-  return r;
+void exit(){
+  asm volatile( "svc #3     \n");
 }
 
 int read(void *command){
@@ -100,6 +96,103 @@ void stayPut(){
   asm volatile( "svc #10    \n");
 }
 
+void writeToDisk(char* file, char* content){
+  int rw;
+  asm volatile( "mov r0, %1 \n"
+                "mov r1, %2 \n"
+                "svc #11    \n"
+                 "mov %0, r0 \n" 
+              : "=rw" (rw) 
+              : "rw" (file), "rw" (content) 
+              : "r0", "r1");
+}
+
+void exec(){
+  asm volatile( "svc #12    \n");
+}
+
+void readFromFile(char* name){
+  int rf;
+  asm volatile( "mov r0, %1 \n"
+                "svc #13    \n"
+                 "mov %0, r0 \n" 
+              : "=rf" (rf) 
+              : "rf" (name) 
+              : "r0");
+}
+
+void list(){
+  asm volatile( "svc #14    \n");
+}
+
+void setChan(int first, int second){
+  int rc;
+  asm volatile( "mov r0, %1 \n"
+                "mov r1, %2 \n"
+                "svc #15    \n"
+                 "mov %0, r0 \n" 
+              : "=rc" (rc) 
+              : "rc" (first), "rc" (second) 
+              : "r0", "r1");
+}
+
+int getFork(int hand){
+  int rg;
+  asm volatile( "mov r0, %1 \n"
+                "svc #16    \n"
+                "mov %0, r0 \n" 
+              : "=rg" (rg) 
+              : "rg" (hand) 
+              : "r0");
+  return rg;
+}
+
+int leaveFork(int hand){
+  int rl;
+  asm volatile( "mov r0, %1 \n"
+                "svc #17    \n"
+                "mov %0, r0 \n" 
+              : "=rl" (rl) 
+              : "rl" (hand) 
+              : "r0");
+  return rl;
+}
+
+int eat(){
+  int re;
+  asm volatile("svc #18     \n"
+               "mov %0, r0 \n" 
+             : "=r" (re));
+  return re;
+}
+
+void setPhils(int id){
+  int rpi;
+  asm volatile( "mov r0, %1 \n"
+                "svc #19    \n"
+                "mov %0, r0 \n" 
+              : "=rpi" (rpi) 
+              : "rpi" (id) 
+              : "r0");
+}
+int get_Id(){
+  int re;
+  asm volatile("svc #20     \n"
+               "mov %0, r0 \n" 
+             : "=r" (re));
+  return re;
+}
+
+void deleteFromDisk(char* name){
+  int rdf;
+  asm volatile( "mov r0, %1 \n"
+                "svc #21    \n"
+                 "mov %0, r0 \n" 
+              : "=rdf" (rdf) 
+              : "rdf" (name) 
+              : "r0");
+}
+
 int getlength(int x){
   int i = 10, l = 1, t = 1;
   while(t){ 
@@ -161,53 +254,3 @@ void writenum(int x){
   }
   for(int i  = l; i>0; i--)dig2char(dig[i-1]);
 }
-
-/*int char2int(char x){
-  int i;
-  switch(x){
-    case "1":
-      i = 1;
-      break;
-    case "2":
-      i = 2;
-      break;
-    case "3":
-      i = 3;
-      break;
-    case "4":
-      i = 4;
-      break;
-    case "5":
-      i = 5;
-      break;
-    case "6":
-      i = 6;
-      break;
-    case "7":
-      i = 7;
-      break;
-    case "8":
-      i = 8;
-      break;
-    case "9":
-      i = 9;
-      break;
-    case "0":
-      i = 0;
-      break;
-    default:
-      write(0, "Digit not found ", 16);
-      break;
-  }
-  return i;
-}
-
-void readnum(char* x){
-  int l = getlength(x), d = 10;
-  int dig[l];
-  for(int i = 0; i<l;i++){
-      dig[i] = x%d;
-      x = (x - (x % d))/d;
-  }
-  for(int i  = l; i>0; i--)dig2char(dig[i-1]);
-}*/

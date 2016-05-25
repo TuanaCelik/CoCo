@@ -6,12 +6,17 @@ int np1s[6];
 int np2s[6];
 int allIds[7];
 int ipc[10];
+int this;
+int check = 0;
+int ok = 0;
+int currentId;
+int rstPhils = 0;
+int id1, id2, id3, id4, id5;
 
 void update(int op, int input[6], int id){
 	if(op == 1){
 		for(int i = 0; i < 6; i++){
 			if( input[i] == 0 ){
-				//running[0] = 1;
 				if (allIds[id] == 0){
 				 	allIds[id] = 1;
 				 	input[i] = id;
@@ -46,6 +51,7 @@ int findId(int input[6]){
 }
 
 int getCommand(char* input, char* command){
+	if(*input == '\r') return 0;
 	while(*input != '\r'){
 		if(*input != *command) return 0;
 		input++;
@@ -72,8 +78,10 @@ void run(char* input){
 				P0();
 				//exit();
 			}
-			else update(1, np0s, i);
-			//return ;
+			else{
+				exec();
+				update(1, np0s, i);
+			} 
 	}
 
 	else if(getCommand(input, "P1\r")){
@@ -82,7 +90,10 @@ void run(char* input){
 				P1();
 				//exit();
 			}
-			else update(1, np1s, i);		
+			else{
+				exec();
+				update(1, np1s, i);
+			} 		
 	}
 
 	else if(getCommand(input, "P2\r")){
@@ -91,27 +102,85 @@ void run(char* input){
 				P2();
 				//exit();
 			}
-			else update(1, np2s, i);
+			else{
+				exec();
+			 	update(1, np2s, i);
+			}
 	}
-
-	else if(getCommand(input, "Philosopher1\r")){
+	else if(getCommand(input, "/cf\r")){
 		int i = fork();
 		if(i == 0){
-			//stayPut();
-			Philosopher1();
+			createFile();
 			exit();
-		}
-		else update(1, ipc, i);
+		}else if(i > 0) exec();
 	}
-
-	else if(getCommand(input, "Philosopher2\r")){
+	else if(getCommand(input, "/rf\r")){
 		int i = fork();
 		if(i == 0){
-			//stayPut();
-			Philosopher2();
+			readFile();
 			exit();
+		}else if (i > 0) exec();
+	}
+
+	else if(getCommand(input, "/ls\r")){
+		int i = fork();
+		if(i == 0){
+			listFiles();
+			exit();
+		}else if(i > 0) exec();
+	}
+
+	else if(getCommand(input, "/df\r")){
+		int i = fork();
+		if(i == 0){
+			deleteFile();
+			exit();
+		}else if(i > 0) exec();
+	}
+
+	else if(getCommand(input, "dine\r")){
+
+		check = 0;
+		int p1, p2, p3, p4, p5;
+		if(check == 0)p1 = fork();
+		if(check == 0)p2 = fork();
+		if(check == 0)p3 = fork();
+	 	if(check == 0)p4 = fork();
+	    if(check == 0)p5 = fork();
+	    if(check == 0){
+			id1 = p1; setPhils(id1);//exec();
 		}
-		else update(1, ipc, i);
+	    if( check == 0){
+			id2 = p2; setPhils(id2);//exec();
+		}
+		if(check == 0){
+			id3 = p3; setPhils(id3);//exec();	
+		}
+		if(check == 0){
+		  	id4 = p4; setPhils(id4);//exec();
+		}
+		if(check == 0){
+			id5 = p5; setPhils(id5);//exec();	
+		}
+		if(check == 0)setChan(id1, id2);
+		if(check == 0)setChan(id2, id3);
+		if(check == 0)setChan(id3, id4);
+		if(check == 0)setChan(id4, id5);
+		if(check == 0)setChan(id1, id5);
+		check = 1;
+		currentId = get_Id();
+		if(currentId == id5) rstPhils = 5;
+		
+		if ( ok == 1 ){
+			table(currentId);
+		}
+		if(ok == 0){
+			ok = 1; 
+			exec();
+			//exit();
+		}
+		ok = 0;
+		check = 0;
 	}
 
 	else if(getCommand(input, "quit P0\r")){
@@ -121,13 +190,12 @@ void run(char* input){
 			for(int i = 0; i<6; i++) {
 				if(np0s[i] != 0){
 					writenum(np0s[i]); write(0, " ", 1);
-				}//testIPC(ipc);
+				}
 			}
 			write(0, "\n", 1);write(0, "Enter id you want to quit: ", 27); read(input); 
 			exitP(char2int(input)); update(0, np0s, char2int(input)); //running[0] = findId(np0s);
 		}else if(noOfP(np0s) == 1){
 			exitP(findId(np0s));
-			//running[0] = 0;
 			update(0, np0s, findId(np0s));
 		}else if(noOfP(np0s) == 0) write(0, "There are no P0s running currently\n", 35);
 	}
@@ -145,7 +213,6 @@ void run(char* input){
 			exitP(char2int(input)); update(0, np1s, char2int(input));//running[1] = findId(np1s);
 		}else if(noOfP(np1s) == 1){
 			exitP(findId(np1s));
-			//running[1] = 0;
 			update(0, np1s, findId(np1s));
 		}else if(noOfP(np1s) == 0) write(0, "There are no P1s running currently\n", 35);
 	}
@@ -163,18 +230,29 @@ void run(char* input){
 			exitP(char2int(input)); update(0, np2s, char2int(input)); //running[2] = findId(np2s);
 		}else if(noOfP(np2s) == 1){
 			exitP(findId(np2s));
-			//running[2] = 0;
 			update(0, np2s, findId(np0s));
 		}else if(noOfP(np2s) == 0) write(0, "There are no P2s running currently\n", 35);
 	}
 
+	else if(getCommand(input, "quit dine\r")){
+		if(id1 != 0 && id2 != 0 && id3 != 0 && id4 != 0 && id5 != 0){
+			exitP(id1); exitP(id2); exitP(id3); exitP(id4); exitP(id5);
+			setChan(id1, id2);
+			setChan(id2, id3);
+			setChan(id3, id4);
+			setChan(id4, id5);
+			setChan(id1, id5);
+			id1 = 0; id2 = 0; id3 = 0; id4 = 0; id5 = 0;
+			rstPhils = 0;
+			setPhils(0); setPhils(0); setPhils(0); setPhils(0); setPhils(0);
+		}else write(0, "The philosophers are not currently at the table\n", 48);
+	}
 	else if(getCommand(input, "/ps\r")) noOfProc();
 	else if(getCommand(input, "exit\r")){
-		int i = exit();
-		if(i == -1) write(0, "Terminal exit successful\n", 25);
-		else write(0, "ERROR\n", 6);
+		exit();
 	}
 	else write(0, "Error: Command not found.\n", 26);
+	
 }
 
 void terminal() {
@@ -182,12 +260,22 @@ void terminal() {
   int i = 0;
   int b = 1;
   while (b){
-    //writeNumb(i);
+    
     if(i == 0) write( 0, "termite$ ", 9);
     else write(0, "\ntermite$ ", 11);
     read( input );
     write (0, "\n", 1);
     run(input);
+    /*if(getCommand(input, "dine\r") && rstPhils == 5){
+    	setChan(id1, id2);
+		setChan(id2, id3);
+		setChan(id3, id4);
+		setChan(id4, id5);
+		setChan(id1, id5);
+		id1 = 0; id2 = 0; id3 = 0; id4 = 0; id5 = 0;
+		rstPhils = 0;
+		setPhils(0); setPhils(0); setPhils(0); setPhils(0); setPhils(0);
+    }*/
     if(getCommand(input, "exit\r")) b = 0;
     i++;
   }
@@ -196,31 +284,3 @@ void terminal() {
 
 void (*entry_terminal)() = &terminal;
 
-//This is the thing I used for run old option
-/*if(getCommand(input, "P0\r")){
-		if(running[0] != 0){
-			char command[101];
-			write(0, "Type 'new' to create new P0 and 'old' to see previously created one\n", 68);
-			read(command);
-			if(getCommand(command, "new\r")){
-				int i = fork();
-				if(i == 0){
-					P0();
-					exit();
-				}else{
-					running[0] = i; update(1, np0s, i);
-				} 
-			}
-			else runSame(running[0]);
-		}
-		else{
-			int i = fork();
-			if(i == 0){
-				P0();
-				exit();
-			}
-			else{
-				running[0] = i; update(1, np0s, i);
-			} 
-		}
-	}*/
